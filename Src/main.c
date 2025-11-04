@@ -200,13 +200,13 @@ int main(void) {
             transmission_started = 0;
             GPIO_Configure(GPIOA, &PA8_AF1);
 
-            DMA2_Stream1->CR &= ~DMA_SxCR_EN; // Disable DMA stream
-            while (DMA2_Stream1->CR & DMA_SxCR_EN); // Wait until it's actually disabled
-            DMA2_Stream1->CR |= DMA_SxCR_EN; // Enable DMA Stream
-            TIM1->CR1 &= ~TIM_CR1_CEN;   // 1. Disable TIM1
-            TIM1->CNT = 0; // Reset the counter
-            TIM1->EGR |= TIM_EGR_UG; // Initialize all registers
-            TIM1->CR1 |= TIM_CR1_CEN;      
+            DMA2_Stream1->CR &= ~DMA_SxCR_EN;           // Disable DMA stream
+            while (DMA2_Stream1->CR & DMA_SxCR_EN);     // Wait until it's actually disabled
+            DMA2_Stream1->CR |= DMA_SxCR_EN;            // Enable DMA Stream
+            TIM1->CR1 &= ~TIM_CR1_CEN;                  // 1. Disable TIM1
+            TIM1->CNT = 0;                              // Reset the counter
+            TIM1->EGR |= TIM_EGR_UG;                    // Initialize all registers
+            TIM1->CR1 |= TIM_CR1_CEN;                   // Start the counter
         }
 
         if (data_received) { // Start decoding

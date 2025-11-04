@@ -2,6 +2,8 @@
 #define I2C_H
 
 #include <stdbool.h>
+#include <stdint.h>
+#include "stm32f4xx.h"
 
 typedef enum {
     I2C_MODE_STANDARD = 0,
@@ -11,7 +13,7 @@ typedef enum {
 typedef struct {
     I2C_TypeDef *instance;
     I2C_Mode mode;
-    // uint8_t ownAddress;          // 7-bit own address (if used in slave mode)
+    // uint8_t ownAddress;
     bool enableAck;
 } I2C_Configuration;
 
