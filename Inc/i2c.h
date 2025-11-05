@@ -10,14 +10,25 @@ typedef enum {
     I2C_MODE_FAST = 1
 } I2C_Mode;
 
+typedef enum {
+    I2C_DUTY_2 = 0,
+    I2C_DUTY_16_9 = 1
+} I2C_Duty;
+
+typedef enum {
+    I2C_ACK_DISABLE = 0,
+    I2C_ACK_ENABLE = 1
+} I2C_Ack;
+
 typedef struct {
     I2C_TypeDef *instance;
     I2C_Mode mode;
-    // uint8_t ownAddress;
+    I2C_Duty duty;
     bool enableAck;
 } I2C_Configuration;
 
-void I2C_Init(void);
+void I2C_EnableClock(I2C_TypeDef *i2c);
+void I2C_Configure(I2C_TypeDef *i2c, I2C_Configuration *config);
 void I2C_Start(void);
 void I2C_Stop(void);
 void I2C_SendAddress(uint8_t address, uint8_t read);

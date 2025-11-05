@@ -1,25 +1,68 @@
 #include "i2c.h"
 #include "stm32f4xx.h"
+#include "system_stm32f4xx.h"
 
-void I2C_Configure(I2C_TypeDef *i2c, I2C_Configuration config) {
+void I2C_Configure(I2C_TypeDef *i2c, I2C_Configuration *config) {
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
 
-    
+    // Set the frequency
+    i2c->CR2 &= ~I2C_CR2_FREQ_Msk;
+    i2c->CR2 |= ((SystemCoreClock / 1000000) << I2C_CR2_FREQ_Pos);
+
+    // Set the mode
+    i2c->CCR &= ~I2C_CCR_FS;
+    i2c->CCR |= (config->mode << I2C_CCR_FS_Pos);
+
+    // Set the duty cycle 
+    i2c->CCR &= ~I2C_CCR_DUTY;
+    i2c->CCR |= (config->duty << I2C_CCR_DUTY_Pos);
+
+    // Calculate CCR and TRISE
+    int ccr = 0;
+    int trise = 0;
+
+    if (config->mode == I2C_MODE_STANDARD) { // Standard mode (100 kHz)
+        ccr = SystemCoreClock / (2 * 100000);
+        trise = (SystemCoreClock / 1000000) + 1;
+    } else if (config->mode == I2C_MODE_FAST) {
+        if (config->duty == I2C_DUTY_2) { // Fast mode with duty cycle = 2
+            ccr = SystemCoreClock / (3 * 400000);
+        }
+        else if (config->duty == I2C_DUTY_16_9) { // Fast mode with duty cycle = 16/9
+            ccr = SystemCoreClock / (25 * 400000);
+        }
+        trise = ((SystemCoreClock * 300) / 1000000000) + 1;
+    }
+    // Set CCR
+    i2c->CCR &= ~I2C_CCR_CCR;
+    i2c->CCR |= (ccr << I2C_CCR_CCR_Pos);
+    // Set TRISE
+    i2c->TRISE = trise;
+
+    // Set Acknowledge
+    i2c->CR1 |= (config->enableAck << I2C_CR1_ACK_Pos);
+
+    // Enable I2C
+    i2c->CR1 |= I2C_CR1_PE;
 }
 
-void I2C_Init(void) {
+void I2C_EnableClock(I2C_TypeDef *i2c) {
+    if (i2c == I2C1) {
+
+    }
     RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
 
-    I2C1->CR2 = (I2C1->CR2 & ~I2C_CR2_FREQ_Msk) | (42 << I2C_CR2_FREQ_Pos);
-    I2C1->CCR &= ~I2C_CCR_FS; // Standard mode
-    I2C1->CCR &= ~I2C_CCR_DUTY; // DUTY = 0;
-    I2C1->CCR |= (210 << I2C_CCR_CCR_Pos);
-    I2C1->TRISE = 43;
-    I2C1->CR1 |= I2C_CR1_PE; // Enable I2C peripheral
+    // I2C1->CR2 &= (I2C1->CR2 & ~I2C_CR2_FREQ_Msk);
+    // I2C1->CR2 |= (42 << I2C_CR2_FREQ_Pos);
+    // I2C1->CCR &= ~I2C_CCR_FS; // Standard mode
+    // I2C1->CCR &= ~I2C_CCR_DUTY; // DUTY = 0;
+    // I2C1->CCR |= (210 << I2C_CCR_CCR_Pos);
+    // I2C1->TRISE = 43;
+    // I2C1->CR1 |= I2C_CR1_PE; // Enable I2C peripheral
 }
 
 void I2C_Start(void) {
-    I2C1->CR1 |= I2C_CR1_ACK;
+    // I2C1->CR1 |= I2C_CR1_ACK;
     I2C1->CR1 |= I2C_CR1_START;
 }
 

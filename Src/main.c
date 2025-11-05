@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -43,6 +44,12 @@ static GPIO_Configuration PB9_AF4 = {
     .outputType = GPIO_OTYPE_OPENDRAIN,
     .outputSpeed = GPIO_OSPEED_VERYHIGH,
     .alternateFunction = GPIO_ALTERNATE_4
+};
+
+static I2C_Configuration I2C1_Config = {
+    .instance = I2C1,
+    .mode = I2C_MODE_STANDARD,
+    .enableAck = true
 };
 
 volatile uint8_t transmission_started = 0;
@@ -123,6 +130,11 @@ void GPIO_Init(void) {
 
     GPIO_Configure(GPIOB, &PB8_AF4);
     GPIO_Configure(GPIOB, &PB9_AF4);
+}
+
+void I2C_Init(void) {
+    I2C_EnableClock(I2C1);
+    I2C_Configure(I2C1, &I2C1_Config);
 }
 
 void TIM1_Init(void) {

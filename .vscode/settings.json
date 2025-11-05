@@ -3,6 +3,7 @@
         "stdio.h": "c",
         "string.h": "c",
         "stdint.h": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "stm32f4xx.h": "c"
     }
 }
