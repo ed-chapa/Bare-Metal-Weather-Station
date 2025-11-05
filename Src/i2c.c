@@ -48,17 +48,18 @@ void I2C_Configure(I2C_TypeDef *i2c, I2C_Configuration *config) {
 
 void I2C_EnableClock(I2C_TypeDef *i2c) {
     if (i2c == I2C1) {
-
+        RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
+    } else if (i2c == I2C2) {
+        RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
     }
-    RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
+}
 
-    // I2C1->CR2 &= (I2C1->CR2 & ~I2C_CR2_FREQ_Msk);
-    // I2C1->CR2 |= (42 << I2C_CR2_FREQ_Pos);
-    // I2C1->CCR &= ~I2C_CCR_FS; // Standard mode
-    // I2C1->CCR &= ~I2C_CCR_DUTY; // DUTY = 0;
-    // I2C1->CCR |= (210 << I2C_CCR_CCR_Pos);
-    // I2C1->TRISE = 43;
-    // I2C1->CR1 |= I2C_CR1_PE; // Enable I2C peripheral
+void I2C_DisableClock(I2C_TypeDef *i2c) {
+    if (i2c == I2C1) {
+        RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN;
+    } else if (i2c == I2C2) {
+        RCC->APB1ENR &= ~RCC_APB1ENR_I2C2EN;
+    }
 }
 
 void I2C_Start(void) {
