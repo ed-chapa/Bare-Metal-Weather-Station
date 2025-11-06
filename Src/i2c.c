@@ -64,7 +64,6 @@ void I2C_DisableClock(I2C_TypeDef *i2c) {
 }
 
 void I2C_Start(void) {
-    // I2C1->CR1 |= I2C_CR1_ACK;
     I2C1->CR1 |= I2C_CR1_START;
 }
 
@@ -72,10 +71,11 @@ void I2C_Stop(void) {
     I2C1->CR1 |= I2C_CR1_STOP;
 }
 
-void I2C_SendAddress(uint8_t address, uint8_t read) {
+void I2C_SendAddress(uint8_t address, I2C_Direction read) {
     while(!(I2C1->SR1 & I2C_SR1_SB));
     I2C1->DR = (address << 1) + read;
     while(!(I2C1->SR1 & I2C_SR1_ADDR));
+    // Required read to SR1 and SR2 as per the reference manual
     volatile uint32_t temp;
     temp = I2C1->SR1;
     temp = I2C1->SR2;

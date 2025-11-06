@@ -89,7 +89,7 @@ void SSD1306_Init() {
 
 void SSD1306_SendCommand(uint8_t cmd) {
     I2C_Start();
-    I2C_SendAddress(OLED_ADDRESS, 0); // Write mode
+    I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE); // Write mode
     I2C_WriteByte(0x00);              // Control byte: command
     I2C_WriteByte(cmd);               // Actual command
     I2C_Stop();
@@ -99,7 +99,7 @@ void SSD1306_ClearDisplay(void) {
     for (uint8_t page = 0; page < 8; page++) {
         // Set column and page address
         I2C_Start();
-        I2C_SendAddress(OLED_ADDRESS, 0); // Write mode
+        I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE); // Write mode
         I2C_WriteByte(0x00);              // Control byte: command
         I2C_WriteByte(0x21);              // Set column address
         I2C_WriteByte(0);                 // Start column
@@ -111,7 +111,7 @@ void SSD1306_ClearDisplay(void) {
 
         // Write 128 zeros to clear the page
         I2C_Start();
-        I2C_SendAddress(OLED_ADDRESS, 0); // Write mode
+        I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE); // Write mode
         I2C_WriteByte(0x40);             // Control byte: data
         for (uint8_t col = 0; col < 128; col++) {
             I2C_WriteByte(0x00);
@@ -129,14 +129,14 @@ void SSD1306_DrawText(const char *text, uint8_t startX, uint8_t startPage) {
         if (*text == '\n') {
             // Send current page
             I2C_Start();
-            I2C_SendAddress(OLED_ADDRESS, 0);
+            I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE);
             I2C_WriteByte(0x00);
             I2C_WriteByte(0x21); I2C_WriteByte(0); I2C_WriteByte(127);
             I2C_WriteByte(0x22); I2C_WriteByte(page); I2C_WriteByte(page);
             I2C_Stop();
 
             I2C_Start();
-            I2C_SendAddress(OLED_ADDRESS, 0);
+            I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE);
             I2C_WriteByte(0x40);
             I2C_Write(buffer, 128);
             I2C_Stop();
@@ -179,14 +179,14 @@ void SSD1306_DrawText(const char *text, uint8_t startX, uint8_t startPage) {
 
     // Send final page
     I2C_Start();
-    I2C_SendAddress(OLED_ADDRESS, 0);
+    I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE);
     I2C_WriteByte(0x00);
     I2C_WriteByte(0x21); I2C_WriteByte(0); I2C_WriteByte(127);
     I2C_WriteByte(0x22); I2C_WriteByte(page); I2C_WriteByte(page);
     I2C_Stop();
 
     I2C_Start();
-    I2C_SendAddress(OLED_ADDRESS, 0);
+    I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE);
     I2C_WriteByte(0x40);
     I2C_Write(buffer, 128);
     I2C_Stop();
@@ -195,14 +195,14 @@ void SSD1306_DrawText(const char *text, uint8_t startX, uint8_t startPage) {
 void SSD1306_DrawIcon(const uint8_t icon[4][16], uint8_t startX, uint8_t startPage) {
     for (uint8_t page = 0; page < 4; page++) {
         I2C_Start();
-        I2C_SendAddress(OLED_ADDRESS, 0);
+        I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE);
         I2C_WriteByte(0x00);
         I2C_WriteByte(0x21); I2C_WriteByte(startX); I2C_WriteByte(startX + 15);
         I2C_WriteByte(0x22); I2C_WriteByte(startPage + page); I2C_WriteByte(startPage + page);
         I2C_Stop();
 
         I2C_Start();
-        I2C_SendAddress(OLED_ADDRESS, 0);
+        I2C_SendAddress(OLED_ADDRESS, I2C_DIRECTION_WRITE);
         I2C_WriteByte(0x40);
         I2C_Write((uint8_t *)icon[page], 16);
         I2C_Stop();

@@ -11,6 +11,7 @@
 #include "dma.h"
 #include "i2c.h"
 #include "ssd1306.h"
+#include "tim.h"
 
 volatile uint8_t transmission_started = 0;
 volatile uint8_t ready_to_receive = 0;
@@ -32,7 +33,6 @@ static GPIO_Configuration PA8_Output = {
     .outputSpeed = GPIO_OSPEED_VERYHIGH,
 };
 
-// PA8 = TIM1_CH1 (AF1)
 static GPIO_Configuration PA8_AF1 = {
     .pin = GPIO_PIN_8,
     .mode = GPIO_MODE_ALTERNATE,
@@ -61,7 +61,7 @@ static I2C_Configuration I2C1_Config = {
     .instance = I2C1,
     .clockFrequency = 42,
     .mode = I2C_MODE_STANDARD,
-    .enableAck = true
+    .enableAck = false
 };
 
 static DMA_Configuration DMA2_Stream1_Config = {
@@ -78,9 +78,29 @@ static DMA_Configuration DMA2_Stream1_Config = {
     .numberOfDataTransfers = 43
 };
 
+static TIM_BaseConfig TIM6_Config = {
+    .prescaler = 8399,
+    .arr = 9,
+    .interrupts = TIM_INTERRUPT_UPDATE
+};
+
 // IRQ Handlers
 void DMA_TransferComplete(void) {
     data_received = 1;
+}
+
+void TIM6_UpdateHandler(void) {
+    tick_count++;
+    // Send 18ms LOW pulse every 1.25 seconds
+    if (tick_count == 1250)
+    {
+        start_pulse = 1;
+    }
+    else if (tick_count == 1518)
+    {
+        tick_count = 0; // Reset counter
+        transmission_started = 1; // Signal that transmission has started to the main loop
+    }
 }
 
 void SystemClock_Init(void) {
@@ -121,11 +141,9 @@ void SystemClock_Init(void) {
     SystemCoreClockUpdate();                                                // Update SystemCoreClock variable
 }
 
-void DMA_Init(void) {
-    DMA_EnableClock(DMA2);
-
-    // DMA2_Stream1 for TIM1
-    DMA_Configure(DMA2_Stream1, &DMA2_Stream1_Config);
+void Interrupt_Init() {
+    IRQ_RegisterCallback(DMA2_Stream1_IRQn, DMA_TransferComplete);
+    IRQ_RegisterCallback(TIM6_DAC_IRQn, TIM6_UpdateHandler);
 }
 
 void GPIO_Init(void) {
@@ -137,6 +155,11 @@ void GPIO_Init(void) {
 
     GPIO_Configure(GPIOB, &PB8_AF4);
     GPIO_Configure(GPIOB, &PB9_AF4);
+}
+
+void DMA_Init(void) {
+    DMA_EnableClock(DMA2);
+    DMA_Configure(DMA2_Stream1, &DMA2_Stream1_Config); // DMA2_Stream1 for TIM1
 }
 
 void I2C_Init(void) {
@@ -160,40 +183,9 @@ void TIM1_Init(void) {
 }
 
 void TIM6_Init() {
-    RCC->APB1ENR |= RCC_APB1ENR_TIM6EN;
-
-    TIM6->PSC = 8399;                                                       // Set frequency to 10 kHz
-    TIM6->ARR = 9;                                                          // Overflow every 1 ms
-    TIM6->DIER |= TIM_DIER_UIE;                                             // Enable update interrupt
-    TIM6->EGR |= TIM_EGR_UG;                                                // Initialize all registers
-
-    // Enable interrupt in the NVIC
-    NVIC_SetPriority(TIM6_DAC_IRQn, 1);
-    NVIC_EnableIRQ(TIM6_DAC_IRQn);
-
-    TIM6->CR1 |= TIM_CR1_CEN;                                               // Start the counter
-}
-
-void Interrupt_Init() {
-    IRQ_RegisterCallback(DMA2_Stream1_IRQn, DMA_TransferComplete);
-}
-
-void TIM6_DAC_IRQHandler(void) {
-    if (TIM6->SR & TIM_SR_UIF) {
-        TIM6->SR &= ~TIM_SR_UIF; // Clear interrupt flag
-        tick_count++;
-
-        // Send 18ms LOW pulse every 1.25 seconds
-        if (tick_count == 1250)
-        {
-            start_pulse = 1;
-        }
-        else if (tick_count == 1518)
-        {
-            tick_count = 0; // Reset counter
-            transmission_started = 1; // Signal that transmission has started to the main loop
-        }
-    }
+    TIM_EnableClock(TIM6);
+    TIM_BASE_Configure(TIM6, &TIM6_Config);
+    TIM_EnableCounter(TIM6);
 }
 
 int main(void) {
@@ -216,11 +208,9 @@ int main(void) {
         if (transmission_started) {
             transmission_started = 0;
             GPIO_Configure(GPIOA, &PA8_AF1);
-
-            // DMA_DisableStream(DMA2_Stream1);
             DMA_EnableStream(DMA2_Stream1);
 
-            TIM1->CR1 &= ~TIM_CR1_CEN;                  // 1. Disable TIM1
+            TIM1->CR1 &= ~TIM_CR1_CEN;                  // Disable TIM1
             TIM1->CNT = 0;                              // Reset the counter
             TIM1->EGR |= TIM_EGR_UG;                    // Initialize all registers
             TIM1->CR1 |= TIM_CR1_CEN;                   // Start the counter
