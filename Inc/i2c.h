@@ -22,6 +22,7 @@ typedef enum {
 
 typedef struct {
     I2C_TypeDef *instance;
+    uint8_t clockFrequency;
     I2C_Mode mode;
     I2C_Duty duty;
     bool enableAck;

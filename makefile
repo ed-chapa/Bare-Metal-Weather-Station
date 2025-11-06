@@ -4,9 +4,10 @@ OBJCOPY = arm-none-eabi-objcopy
 CFLAGS = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -Wall
 LDSCRIPT = STM32F410RBTX_FLASH.ld
 
-Build:
+build:
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/main.c $(CFLAGS) -o Build/main.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/gpio.c $(CFLAGS) -o Build/gpio.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/irq.c $(CFLAGS) -o Build/irq.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/dma.c $(CFLAGS) -o Build/dma.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/i2c.c $(CFLAGS) -o Build/i2c.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/ssd1306.c $(CFLAGS) -o Build/ssd1306.o
@@ -19,6 +20,8 @@ Build:
 debug:
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/main.c $(CFLAGS) -o Build/main.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/gpio.c $(CFLAGS) -o Build/gpio.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/irq.c $(CFLAGS) -o Build/irq.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/dma.c $(CFLAGS) -o Build/dma.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/i2c.c $(CFLAGS) -o Build/i2c.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/ssd1306.c $(CFLAGS) -o Build/ssd1306.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/syscalls.c $(CFLAGS) -o Build/syscalls.o
@@ -33,4 +36,4 @@ flash:
 clean:
 	rm -f Build/*.o Build/*.elf Build/*.bin
 
-.PHONY: Build debug flash clean
+.PHONY: build debug flash clean

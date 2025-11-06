@@ -7,7 +7,7 @@ void I2C_Configure(I2C_TypeDef *i2c, I2C_Configuration *config) {
 
     // Set the frequency
     i2c->CR2 &= ~I2C_CR2_FREQ_Msk;
-    i2c->CR2 |= ((SystemCoreClock / 1000000) << I2C_CR2_FREQ_Pos);
+    i2c->CR2 |= ((config->clockFrequency / 1000000) << I2C_CR2_FREQ_Pos);
 
     // Set the mode
     i2c->CCR &= ~I2C_CCR_FS;
@@ -21,17 +21,18 @@ void I2C_Configure(I2C_TypeDef *i2c, I2C_Configuration *config) {
     int ccr = 0;
     int trise = 0;
 
+    uint32_t real_frequency = config->clockFrequency * 1000000;
     if (config->mode == I2C_MODE_STANDARD) { // Standard mode (100 kHz)
-        ccr = SystemCoreClock / (2 * 100000);
-        trise = (SystemCoreClock / 1000000) + 1;
+        ccr = real_frequency / (2 * 100000);
+        trise = (real_frequency / 1000000) + 1;
     } else if (config->mode == I2C_MODE_FAST) {
         if (config->duty == I2C_DUTY_2) { // Fast mode with duty cycle = 2
-            ccr = SystemCoreClock / (3 * 400000);
+            ccr = real_frequency / (3 * 400000);
         }
         else if (config->duty == I2C_DUTY_16_9) { // Fast mode with duty cycle = 16/9
-            ccr = SystemCoreClock / (25 * 400000);
+            ccr = real_frequency / (25 * 400000);
         }
-        trise = ((SystemCoreClock * 300) / 1000000000) + 1;
+        trise = ((real_frequency * 300) / 1000000000) + 1;
     }
     // Set CCR
     i2c->CCR &= ~I2C_CCR_CCR;

@@ -7,6 +7,7 @@
 #include "system_stm32f4xx.h"
 
 #include "gpio.h"
+#include "irq.h"
 #include "dma.h"
 #include "i2c.h"
 #include "ssd1306.h"
@@ -58,6 +59,7 @@ static GPIO_Configuration PB9_AF4 = {
 
 static I2C_Configuration I2C1_Config = {
     .instance = I2C1,
+    .clockFrequency = 42,
     .mode = I2C_MODE_STANDARD,
     .enableAck = true
 };
@@ -75,6 +77,11 @@ static DMA_Configuration DMA2_Stream1_Config = {
     .peripheralAddress = (uint32_t) &(TIM1->CCR1),
     .numberOfDataTransfers = 43
 };
+
+// IRQ Handlers
+void DMA_TransferComplete(void) {
+    data_received = 1;
+}
 
 void SystemClock_Init(void) {
     RCC->CR |= RCC_CR_HSION;                                                // Enable HSI
@@ -119,10 +126,6 @@ void DMA_Init(void) {
 
     // DMA2_Stream1 for TIM1
     DMA_Configure(DMA2_Stream1, &DMA2_Stream1_Config);
-
-    // Enable interrupt in the NVIC
-    NVIC_SetPriority(DMA2_Stream1_IRQn, 2);
-    NVIC_EnableIRQ(DMA2_Stream1_IRQn);
 }
 
 void GPIO_Init(void) {
@@ -171,11 +174,8 @@ void TIM6_Init() {
     TIM6->CR1 |= TIM_CR1_CEN;                                               // Start the counter
 }
 
-void DMA2_Stream1_IRQHandler(void) {
-    if (DMA2->LISR & DMA_LISR_TCIF1) {
-        DMA2->LIFCR |= DMA_LIFCR_CTCIF1; // Clear interrupt flag
-        data_received = 1;
-    }
+void Interrupt_Init() {
+    IRQ_RegisterCallback(DMA2_Stream1_IRQn, DMA_TransferComplete);
 }
 
 void TIM6_DAC_IRQHandler(void) {
@@ -198,6 +198,7 @@ void TIM6_DAC_IRQHandler(void) {
 
 int main(void) {
     SystemClock_Init();
+    Interrupt_Init();
     DMA_Init();
     GPIO_Init();
     I2C_Init();
@@ -216,9 +217,9 @@ int main(void) {
             transmission_started = 0;
             GPIO_Configure(GPIOA, &PA8_AF1);
 
-            DMA2_Stream1->CR &= ~DMA_SxCR_EN;           // Disable DMA stream
-            while (DMA2_Stream1->CR & DMA_SxCR_EN);     // Wait until it's actually disabled
-            DMA2_Stream1->CR |= DMA_SxCR_EN;            // Enable DMA Stream
+            // DMA_DisableStream(DMA2_Stream1);
+            DMA_EnableStream(DMA2_Stream1);
+
             TIM1->CR1 &= ~TIM_CR1_CEN;                  // 1. Disable TIM1
             TIM1->CNT = 0;                              // Reset the counter
             TIM1->EGR |= TIM_EGR_UG;                    // Initialize all registers

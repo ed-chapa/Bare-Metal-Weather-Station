@@ -1,4 +1,5 @@
 #include "dma.h"
+#include "irq.h"
 #include <stdbool.h>
 
 // Arrays for IRQs
@@ -25,10 +26,10 @@ static const IRQn_Type dma2_irqs[] = {
 };
 
 IRQn_Type DMA_GetIRQ(DMA_Stream_TypeDef *stream) {
-    if ((uint32_t)stream >= (uint32_t)DMA1_Stream0 && (uint32_t)stream <= (uint32_t)DMA1_Stream7) { // Check if stream memory address is in DMA1 range
+    if ((uint32_t)stream >= (uint32_t)DMA1_Stream0 && (uint32_t)stream <= (uint32_t)DMA1_Stream7) { // Check if stream address is in DMA1 range
         uint32_t index = ((uint32_t)stream - (uint32_t)DMA1_Stream0) / sizeof(DMA_Stream_TypeDef);
         return dma1_irqs[index];
-    } else if ((uint32_t)stream >= (uint32_t)DMA2_Stream0 && (uint32_t)stream <= (uint32_t)DMA2_Stream7) { // Check if stream memory address is in DMA1 range
+    } else if ((uint32_t)stream >= (uint32_t)DMA2_Stream0 && (uint32_t)stream <= (uint32_t)DMA2_Stream7) { // Check if stream address is in DMA2 range
         uint32_t index = ((uint32_t)stream - (uint32_t)DMA2_Stream0) / sizeof(DMA_Stream_TypeDef);
         return dma2_irqs[index];
     }
@@ -95,12 +96,6 @@ void DMA_Configure(DMA_Stream_TypeDef *stream, DMA_Configuration *config) {
         if (config->interrupts & DMA_INTERRUPT_FE) {
             stream->FCR |= DMA_SxFCR_FEIE;
         }
-
-        // Enable interrupt in NVIC
-        // IRQn_Type irq = DMA_GetIRQ(stream);
-        // if (irq != (IRQn_Type)-1) {
-        //     NVIC_EnableIRQ(irq);
-        // }
     }
 }
 
@@ -111,4 +106,78 @@ void DMA_EnableStream(DMA_Stream_TypeDef *stream) {
 void DMA_DisableStream(DMA_Stream_TypeDef *stream) {
     stream->CR &= ~DMA_SxCR_EN;
     while (stream->CR & DMA_SxCR_EN);     // Wait until stream is disabled
+}
+
+
+// IRQ Handlers
+void DMA2_Stream0_IRQHandler(void) {
+    if (DMA2->LISR & DMA_LISR_TCIF0) {
+        DMA2->LIFCR |= DMA_LIFCR_CTCIF0;
+
+        IRQ_Callback callback = IRQ_GetCallback(DMA2_Stream0_IRQn);
+        if (callback) callback();
+    }
+}
+
+void DMA2_Stream1_IRQHandler(void) {
+    if (DMA2->LISR & DMA_LISR_TCIF1) {
+        DMA2->LIFCR |= DMA_LIFCR_CTCIF1;
+    
+        IRQ_Callback callback = IRQ_GetCallback(DMA2_Stream1_IRQn);
+        if (callback) callback();
+    }
+}
+
+void DMA2_Stream2_IRQHandler(void) {
+    if (DMA2->LISR & DMA_LISR_TCIF2) {
+        DMA2->LIFCR |= DMA_LIFCR_CTCIF2;
+    
+        IRQ_Callback callback = IRQ_GetCallback(DMA2_Stream2_IRQn);
+        if (callback) callback();
+    }
+}
+
+void DMA2_Stream3_IRQHandler(void) {
+    if (DMA2->LISR & DMA_LISR_TCIF3) {
+        DMA2->LIFCR |= DMA_LIFCR_CTCIF3;
+    
+        IRQ_Callback callback = IRQ_GetCallback(DMA2_Stream3_IRQn);
+        if (callback) callback();
+    }
+}
+
+void DMA2_Stream4_IRQHandler(void) {
+    if (DMA2->LISR & DMA_HISR_TCIF4) {
+        DMA2->LIFCR |= DMA_HIFCR_CTCIF4;
+    
+        IRQ_Callback callback = IRQ_GetCallback(DMA2_Stream4_IRQn);
+        if (callback) callback();
+    }
+}
+
+void DMA2_Stream5_IRQHandler(void) {
+    if (DMA2->LISR & DMA_HISR_TCIF5) {
+        DMA2->LIFCR |= DMA_HIFCR_CTCIF5;
+    
+        IRQ_Callback callback = IRQ_GetCallback(DMA2_Stream5_IRQn);
+        if (callback) callback();
+    }
+}
+
+void DMA2_Stream6_IRQHandler(void) {
+    if (DMA2->LISR & DMA_HISR_TCIF6) {
+        DMA2->LIFCR |= DMA_HIFCR_CTCIF6;
+    
+        IRQ_Callback callback = IRQ_GetCallback(DMA2_Stream6_IRQn);
+        if (callback) callback();
+    }
+}
+
+void DMA2_Stream7_IRQHandler(void) {
+    if (DMA2->LISR & DMA_HISR_TCIF7) {
+        DMA2->LIFCR |= DMA_HIFCR_CTCIF7;
+    
+        IRQ_Callback callback = IRQ_GetCallback(DMA2_Stream7_IRQn);
+        if (callback) callback();
+    }
 }
