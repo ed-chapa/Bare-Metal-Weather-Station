@@ -2,16 +2,16 @@
 
 void GPIO_EnableClock(GPIO_TypeDef *port) {
     if (port == GPIOA) RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-    if (port == GPIOB) RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
-    if (port == GPIOC) RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
-    if (port == GPIOH) RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;
+    else if (port == GPIOB) RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
+    else if (port == GPIOC) RCC->AHB1ENR |= RCC_AHB1ENR_GPIOCEN;
+    else if (port == GPIOH) RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;
 }
 
 void GPIO_DisableClock(GPIO_TypeDef *port) {
     if (port == GPIOA) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOAEN;
-    if (port == GPIOB) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOBEN;
-    if (port == GPIOC) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOCEN;
-    if (port == GPIOH) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOHEN;
+    else if (port == GPIOB) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOBEN;
+    else if (port == GPIOC) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOCEN;
+    else if (port == GPIOH) RCC->AHB1ENR &= ~RCC_AHB1ENR_GPIOHEN;
 }
 
 void GPIO_Configure(GPIO_TypeDef *port, GPIO_Configuration *config)

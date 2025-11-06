@@ -7,10 +7,20 @@
 #include "system_stm32f4xx.h"
 
 #include "gpio.h"
+#include "dma.h"
 #include "i2c.h"
 #include "ssd1306.h"
 
+volatile uint8_t transmission_started = 0;
+volatile uint8_t ready_to_receive = 0;
+volatile uint8_t data_received = 0;
+volatile uint32_t tick_count = 0;
+volatile uint32_t start_pulse = 0;
+volatile uint8_t time_index = 0;
 
+char i2c_buffer[128] = {0};
+uint8_t decoded_data[5] = {0};
+uint16_t timestamps[43] = {0};
 
 //////////////// Init structs ////////////////
 
@@ -52,16 +62,19 @@ static I2C_Configuration I2C1_Config = {
     .enableAck = true
 };
 
-volatile uint8_t transmission_started = 0;
-volatile uint8_t ready_to_receive = 0;
-volatile uint8_t data_received = 0;
-volatile uint32_t tick_count = 0;
-volatile uint32_t start_pulse = 0;
-volatile uint8_t time_index = 0;
-
-char i2c_buffer[128] = {0};
-uint8_t decoded_data[5] = {0};
-uint16_t timestamps[43] = {0};
+static DMA_Configuration DMA2_Stream1_Config = {
+    .stream = DMA2_Stream1,
+    .channel = DMA_CHANNEL_6,
+    .memorySize = DMA_MSIZE_HALFWORD,
+    .peripheralSize = DMA_PSIZE_HALFWORD,
+    .peripheralIncrease = DMA_PINC_DISABLE,
+    .memoryIncrease = DMA_MINC_ENABLE,
+    .transferDirection = DMA_DIRECTION_PERIPHERAL_TO_MEMORY,
+    .interrupts = DMA_INTERRUPT_TC,
+    .memoryAddress = (uint32_t)timestamps,
+    .peripheralAddress = (uint32_t) &(TIM1->CCR1),
+    .numberOfDataTransfers = 43
+};
 
 void SystemClock_Init(void) {
     RCC->CR |= RCC_CR_HSION;                                                // Enable HSI
@@ -102,19 +115,10 @@ void SystemClock_Init(void) {
 }
 
 void DMA_Init(void) {
-    RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;                                     // Enable clock for DMA2
+    DMA_EnableClock(DMA2);
 
     // DMA2_Stream1 for TIM1
-    DMA2_Stream1->NDTR = 43;                                                // Set the number of data transfer to 42
-    DMA2_Stream1->PAR = (uint32_t) &(TIM1->CCR1);                           // Set peripheral address to TIM1->CCR1
-    DMA2_Stream1->M0AR = (uint32_t) timestamps;                             // Set memory address to timestamps
-    DMA2_Stream1->CR |= (6 << DMA_SxCR_CHSEL_Pos);                          // Select channel 6
-    DMA2_Stream1->CR &= ~DMA_SxCR_DIR;                                      // Set transfer direction to peripheral-to-memory
-    DMA2_Stream1->CR &= ~DMA_SxCR_PINC;                                     // Disable peripheral increment mode
-    DMA2_Stream1->CR |= DMA_SxCR_MINC;                                      // Enable memory increment mode
-    DMA2_Stream1->CR |= (1 << DMA_SxCR_PSIZE_Pos);                          // Set peripheral data size to half-word (16-bit)
-    DMA2_Stream1->CR |= (1 << DMA_SxCR_MSIZE_Pos);                          // Set memory data size to half-word (16-bit)
-    DMA2_Stream1->CR |= DMA_SxCR_TCIE;                                      // Enable transfer complete interrupt
+    DMA_Configure(DMA2_Stream1, &DMA2_Stream1_Config);
 
     // Enable interrupt in the NVIC
     NVIC_SetPriority(DMA2_Stream1_IRQn, 2);

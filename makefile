@@ -7,6 +7,7 @@ LDSCRIPT = STM32F410RBTX_FLASH.ld
 Build:
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/main.c $(CFLAGS) -o Build/main.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/gpio.c $(CFLAGS) -o Build/gpio.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/dma.c $(CFLAGS) -o Build/dma.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/i2c.c $(CFLAGS) -o Build/i2c.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/ssd1306.c $(CFLAGS) -o Build/ssd1306.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/syscalls.c $(CFLAGS) -o Build/syscalls.o
