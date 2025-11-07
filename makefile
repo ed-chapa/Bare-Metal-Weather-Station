@@ -7,6 +7,12 @@ LDSCRIPT = STM32F410RBTX_FLASH.ld
 build:
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/main.c $(CFLAGS) -o Build/main.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/gpio.c $(CFLAGS) -o Build/gpio.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/globals.c $(CFLAGS) -o Build/globals.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/config.c $(CFLAGS) -o Build/config.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/interrupt.c $(CFLAGS) -o Build/interrupt.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/init.c $(CFLAGS) -o Build/init.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/system_clock.c $(CFLAGS) -o Build/system_clock.o
+# 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/dht11.c $(CFLAGS) -o Build/dht11.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/tim.c $(CFLAGS) -o Build/tim.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/irq.c $(CFLAGS) -o Build/irq.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -c Src/dma.c $(CFLAGS) -o Build/dma.o
