@@ -168,18 +168,24 @@ void I2C_Init(void) {
 }
 
 void TIM1_Init(void) {
-    RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;                                     // Enable TIM1 clock
+    // Enable TIM1 clock
+    TIM_EnableClock(TIM1);
 
-    // Configure TIM1 for input capture
-    TIM1->PSC = 83;                                                         // Set clock frequency to 1 MHz
-    TIM1->ARR = 0xFFFF;                                                     // Set ARR to its max value to prevent overflows
-    TIM1->CCMR1 &= ~TIM_CCMR1_CC1S;                                         // Clear bits
-    TIM1->CCMR1 |= (1 << TIM_CCMR1_CC1S_Pos);                               // IC1 mapped to TI1
-    TIM1->CCMR1 |= (2 << TIM_CCMR1_IC1F_Pos);                               // Set filter duration to 4 cycles
-    TIM1->CCER &= ~TIM_CCER_CC1P;                                           // Clear bits
-    TIM1->CCER |= (1 << TIM_CCER_CC1P_Pos);                                 // Capture falling edges
-    TIM1->CCER |=  TIM_CCER_CC1E;                                           // Enable input capture for channel 1
-    TIM1->DIER |= TIM_DIER_CC1DE;                                           // Enable DMA request on input capture for channel 1
+    // Fill in configuration struct
+    TIM_InputCaptureConfig tim1_cfg = {
+        .prescaler   = 83,                       // 1 MHz timer clock
+        .arr         = 0xFFFF,                   // Max ARR to avoid overflow
+        .channel     = TIM_CHANNEL_1,            // Use channel 1
+        .icPolarity  = TIM_ICPOLARITY_FALLING,   // Capture falling edges
+        .icSelection = TIM_ICSELECTION_DIRECTTI, // Map CC1 to TI1
+        .icFilter    = TIM_ICFILTER_FCKINT_N4    // Filter: 4 samples
+    };
+
+    // Configure TIM1 for input capture using abstraction
+    TIM_IC_Configure(TIM1, &tim1_cfg);
+
+    // Enable DMA
+    TIM1->DIER |= TIM_DIER_CC1DE;
 }
 
 void TIM6_Init() {
@@ -210,7 +216,7 @@ int main(void) {
             GPIO_Configure(GPIOA, &PA8_AF1);
             DMA_EnableStream(DMA2_Stream1);
 
-            TIM1->CR1 &= ~TIM_CR1_CEN;                  // Disable TIM1
+            // TIM1->CR1 &= ~TIM_CR1_CEN;                  // Disable TIM1
             TIM1->CNT = 0;                              // Reset the counter
             TIM1->EGR |= TIM_EGR_UG;                    // Initialize all registers
             TIM1->CR1 |= TIM_CR1_CEN;                   // Start the counter

@@ -21,6 +21,7 @@ build:
 debug:
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/main.c $(CFLAGS) -o Build/main.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/gpio.c $(CFLAGS) -o Build/gpio.o
+	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/tim.c $(CFLAGS) -o Build/tim.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/irq.c $(CFLAGS) -o Build/irq.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/dma.c $(CFLAGS) -o Build/dma.o
 	$(CC) -I Drivers/CMSIS -I Drivers/Device -I Inc -g -c Src/i2c.c $(CFLAGS) -o Build/i2c.o
