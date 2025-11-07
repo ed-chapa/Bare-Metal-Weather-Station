@@ -8,7 +8,6 @@
 
 #include "globals.h"
 #include "config.h"
-#include "init.h"
 #include "system_clock.h"
 #include "gpio.h"
 #include "irq.h"
