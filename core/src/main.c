@@ -22,10 +22,10 @@ int main(void) {
     DMA_Init();
     GPIO_Init();
     I2C_Init();
-    SSD1306_Init();
+    SSD1306_Init(I2C1);
     TIM1_Init();
     TIM6_Init();
-
+    
     while(1) {
         if (start_pulse) {
             start_pulse = 0;

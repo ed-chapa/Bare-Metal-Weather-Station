@@ -36,9 +36,9 @@ GPIO_Configuration PB9_AF4 = {
     .alternateFunction = GPIO_ALTERNATE_4
 };
 
-I2C_Configuration I2C1_Config = {
+I2C_Config I2C1_Config = {
     .instance = I2C1,
-    .clockFrequency = 42,
+    .clockFrequency = 42000000,
     .mode = I2C_MODE_STANDARD,
     .enableAck = false
 };
