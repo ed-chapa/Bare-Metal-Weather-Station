@@ -4,9 +4,9 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/drivers/CMSIS",
-                "${workspaceFolder}/drivers/device",
-                "${workspaceFolder}/drivers/peripherals",
+                "${workspaceFolder}/CMSIS",
+                "${workspaceFolder}/device",
+                "${workspaceFolder}/driver",
                 "${workspaceFolder}/core/inc"
             ],
             "defines": [],
